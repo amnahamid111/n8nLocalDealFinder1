@@ -1,0 +1,258 @@
+{
+  "name": "LocalDealFinder",
+  "nodes": [
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "02157eb0-cf95-4c09-8264-63350e61ff18",
+              "name": "Product name",
+              "value": "={{ $json[\"Product name\"] }}",
+              "type": "string"
+            },
+            {
+              "id": "0af13ec3-3b8b-4fe0-993f-5d47abfcf74c",
+              "name": "City",
+              "value": "={{ $json[\"City (optional)\"] }}",
+              "type": "string"
+            },
+            {
+              "id": "f57ee940-506f-4139-8874-47051d95144a",
+              "name": "email",
+              "value": "={{ $json.Email }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -464,
+        -128
+      ],
+      "id": "3a03be66-17e5-4a5f-b1d4-759245ad7563",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json[\"Product name\"] }}",
+        "options": {
+          "systemMessage": "You are a Product Finder Agent for Pakistan.\nYour job is:\n1. Search all Pakistani websites for the product:\n   - Daraz.pk\n   - OLX.com.pk\n   - PriceOye.pk\n   - Mega.pk\n   - Shophive.com\n   - Telemart.pk\n   - iShopping.pk\n2. Use HTTP Request tool to check availability.\n3. Compare prices.\n4. Return:\n   - Product name\n   - Price\n   - Website link\n   - Short conclusion: Best deal\nAlways return clean structured text. Never return JSON. Always return clean human-readable text only.\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        -288,
+        -160
+      ],
+      "id": "33ab7eb2-7a07-4d85-a0e2-f0a7e2ae0b0e",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "19c41274-ce35-485c-bef3-78781b4ca4da",
+              "name": "=email_body",
+              "value": "={{ $('AI Agent').item.json.output }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        272,
+        -176
+      ],
+      "id": "f5aeace3-2b22-4c65-942d-7bcf009b64f2",
+      "name": "Edit Fields1"
+    },
+    {
+      "parameters": {
+        "sendTo": "shareknow29@gmail.com",
+        "subject": "=Your Product Deal Report for: {{ $('Edit Fields').item.json[\"Product name\"] }}",
+        "message": "=Here are the latest deals I found:\n{{ $('AI Agent').item.json.output }}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        624,
+        -144
+      ],
+      "id": "de02824c-4e0f-4074-a8cd-0a84eae3fb4b",
+      "name": "Send a message",
+      "webhookId": "2e5d0c9a-74e1-4714-b417-bcda122a2809",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "gJNI5TH4Lq8kZTAv",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            },
+            {}
+          ]
+        },
+        "documentId": {
+          "__rl": true,
+          "value": "1Q4g6h03AKW70vgaZwLQ9Huyi1tYhy96dTIXQZIZYO-0",
+          "mode": "list",
+          "cachedResultName": "Request form",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Q4g6h03AKW70vgaZwLQ9Huyi1tYhy96dTIXQZIZYO-0/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 590067060,
+          "mode": "list",
+          "cachedResultName": "Form Responses 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Q4g6h03AKW70vgaZwLQ9Huyi1tYhy96dTIXQZIZYO-0/edit#gid=590067060"
+        },
+        "event": "rowAdded",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTrigger",
+      "typeVersion": 1,
+      "position": [
+        -672,
+        -128
+      ],
+      "id": "4b777e76-80ac-420c-9844-e09064c08d6a",
+      "name": "Google Sheets Trigger",
+      "credentials": {
+        "googleSheetsTriggerOAuth2Api": {
+          "id": "NRY1t5HmPGM6wjRW",
+          "name": "Google Sheets Trigger account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        -432,
+        48
+      ],
+      "id": "a75f87e2-e8ca-45ed-94b8-88e3af16c8d1",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "PfHJ3NpUwaO8i98c",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "=http://api.scraperapi.com/?api_key=50a91497479f75e2ab649724e2646e6d&url=https://www.daraz.pk/catalog/?q={{ $('Edit Fields').item.json[\"Product name\"] }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        64,
+        -160
+      ],
+      "id": "89471d62-f68f-47cf-aadf-19ce3c79c66d",
+      "name": "HTTP Request"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Sheets Trigger": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "e1fee446-d8ab-4a8c-8f00-29f0ea7963fd",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "8176c2f31cd3f793c35f2d03fafe2d9615eb90dc4fbc9e7ef919af56ed048963"
+  },
+  "id": "zF7ml7aJ3sEXS1Au",
+  "tags": []
+}
